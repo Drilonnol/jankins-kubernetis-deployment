@@ -13,26 +13,6 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Drilonnol/jankins-kubernetis-deployment.git'
             }
         }
-        
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Build Docker image
-                    docker.build(dockerimagename, "-t $dockerimagename:$tag .")
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                script {
-                    // Push Docker image to Docker Hub
-                    docker.withRegistry('', registryCredential) {
-                        docker.image(dockerimagename).push("$tag")
-                    }
-                }
-            }
-        }
 
         stage('Deploy to Kubernetes') {
             steps {
@@ -51,6 +31,11 @@ pipeline {
                     sh '''
                         kubectl apply -f deployment.yaml
                         kubectl apply -f service.yaml
+                    '''
+                    
+                    // Get the service details and display in Jenkins logs
+                    sh '''
+                        minikube service react-app-service --url
                     '''
                 }
             }
