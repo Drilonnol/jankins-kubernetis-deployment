@@ -9,7 +9,7 @@ pipeline {
   stages {
     stage('Checkout Source') {
       steps {
-        git credentialsId: 'github-credentials', url: 'https://github.com/Drilonnol/jankins-kubernetis-deployment.git'
+        git url: 'https://github.com/Drilonnol/jankins-kubernetis-deployment.git'
       }
     }
     stage('Build image') {
