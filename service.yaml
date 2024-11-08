@@ -1,24 +1,12 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  name: deployment #The name of the Kubernetes 
-        #Deployment to be created in the Kubernetes cluster
-  labels:
-    app: react-app
+  name: react-app-service
 spec:
-  replicas: 2 #The number of pods to be created in the 
-   #Kubernetes cluster for the React.js application container
   selector:
-    matchLabels:
-      app: react-app
-  template:
-    metadata:
-      labels:
-        app: react-app 
-    spec:
-      containers:
-      - name: react-app #The name of the react.js application container
-        #The Docker image for building the React.js application container
-        image: bravinwasike/react-app:latest 
-        ports:
-        - containerPort: 3000 #The port for the React.js application container
+    app: react-app
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: NodePort
