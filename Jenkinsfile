@@ -1,7 +1,6 @@
 pipeline {
   environment {
     dockerimagename = "drilonnol/react-app"
-    dockerImage = ""
     registryCredential = 'dockerhub-credentials'
     tag = "latest"
   }
@@ -28,10 +27,12 @@ pipeline {
         }
       }
     }
-    stage('Deploying React.js container to Kubernetes') {
+    stage('Deploying with kubectl') {
       steps {
         script {
-          kubernetesDeploy(configs: "deployment.yaml,service.yaml")
+          // Përdorni rrugët absolute për deployment dhe service YAML
+          sh 'kubectl apply -f C:\\Users\\Drilon\\Desktop\\gitjankins\\jankins-kubernetis-deployment\\deployment.yaml'
+          sh 'kubectl apply -f C:\\Users\\Drilon\\Desktop\\gitjankins\\jankins-kubernetis-deployment\\service.yaml'
         }
       }
     }
