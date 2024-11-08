@@ -4,7 +4,7 @@ pipeline {
         registryCredential = 'dockerhub-credentials'
         tag = "latest"
           KUBERNETES_SERVER = 'https://127.0.0.1:61828'
-        KUBERNETES_TOKEN = credentials('k8s-token') // use the token stored in Jenkins credentials
+        KUBERNETES_TOKEN = credentials('secrets') // use the token stored in Jenkins credentials
         KUBERNETES_CA_CERT = credentials('k8s-ca-cert') // use the CA certificate stored in Jenkins credentials
     }
     agent any
