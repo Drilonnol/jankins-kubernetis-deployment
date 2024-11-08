@@ -4,7 +4,7 @@ pipeline {
         registryCredential = 'dockerhub-credentials'
         tag = "latest"
         KUBERNETES_SERVER = 'https://127.0.0.1:61828'
-        KUBERNETES_TOKEN = credentials('secrets') // use the token stored in Jenkins credentials
+        KUBERNETES_TOKEN = credentials('secrets') // Token stored in Jenkins credentials
     }
     agent any
     stages {
@@ -17,7 +17,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    // Use Minikube's Docker environment
+                    // Ensure Minikube's Docker environment is correctly configured
                     sh '''
                         eval $(minikube -p minikube docker-env)
                         docker build -t ${dockerimagename}:${tag} .
@@ -30,7 +30,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Configure kubectl to use your Minikube cluster without the certificate
+                    // Configure kubectl to use your Minikube cluster
                     withEnv(["KUBERNETES_TOKEN=${KUBERNETES_TOKEN}", "KUBERNETES_SERVER=${KUBERNETES_SERVER}"]) {
                         sh '''
                             kubectl config set-cluster minikube --server=${KUBERNETES_SERVER} --insecure-skip-tls-verify=true
@@ -40,17 +40,22 @@ pipeline {
                         '''
                     }
                     
-                    // Apply the deployment and service YAML files
+                    // Apply deployment and service YAML files
                     sh '''
                         kubectl apply -f deployment.yaml
                         kubectl apply -f service.yaml
                     '''
-                    
+
+                    // Wait for the pods to be ready before proceeding
+                    sh '''
+                        kubectl rollout status deployment/react-app-deployment --timeout=2m
+                    '''
+
                     // Check the deployment status
                     sh 'kubectl get pods'
                     sh 'kubectl get svc'
 
-                    // Get the service details and display in Jenkins logs
+                    // Display the URL of the service via minikube
                     sh '''
                         minikube service react-app-service --url
                     '''
