@@ -15,7 +15,7 @@ pipeline {
     stage('Build image') {
       steps {
         script {
-          dockerImage = docker.build("${dockerimagename}:${tag}")
+            dockerImage = docker.build("${dockerimagename}:${tag}", "-f C:\Users\Drilon\Desktop\gitjankins\jankins-kubernetis-deployment\Dockerfile .")
         }
       }
     }
