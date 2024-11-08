@@ -14,6 +14,19 @@ pipeline {
             }
         }
 
+        stage('Build and Push Docker Image') {
+            steps {
+                script {
+                    // Use Minikube's Docker environment
+                    sh '''
+                        eval $(minikube -p minikube docker-env)
+                        docker build -t ${dockerimagename}:${tag} .
+                        docker push ${dockerimagename}:${tag}
+                    '''
+                }
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 script {
@@ -33,6 +46,10 @@ pipeline {
                         kubectl apply -f service.yaml
                     '''
                     
+                    // Check the deployment status
+                    sh 'kubectl get pods'
+                    sh 'kubectl get svc'
+
                     // Get the service details and display in Jenkins logs
                     sh '''
                         minikube service react-app-service --url
