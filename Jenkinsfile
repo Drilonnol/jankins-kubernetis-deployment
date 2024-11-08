@@ -3,9 +3,8 @@ pipeline {
         dockerimagename = "drilonnol/react-app"
         registryCredential = 'dockerhub-credentials'
         tag = "latest"
-          KUBERNETES_SERVER = 'https://127.0.0.1:61828'
+        KUBERNETES_SERVER = 'https://127.0.0.1:61828'
         KUBERNETES_TOKEN = credentials('secrets') // use the token stored in Jenkins credentials
-        KUBERNETES_CA_CERT = credentials('k8s-ca-cert') // use the CA certificate stored in Jenkins credentials
     }
     agent any
     stages {
@@ -38,10 +37,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Configure kubectl to use your Minikube cluster
-                    withEnv(["KUBERNETES_CA_CERT=${KUBERNETES_CA_CERT}", "KUBERNETES_TOKEN=${KUBERNETES_TOKEN}", "KUBERNETES_SERVER=${KUBERNETES_SERVER}"]) {
+                    // Configure kubectl to use your Minikube cluster without the certificate
+                    withEnv(["KUBERNETES_TOKEN=${KUBERNETES_TOKEN}", "KUBERNETES_SERVER=${KUBERNETES_SERVER}"]) {
                         sh '''
-                            kubectl config set-cluster minikube --server=${KUBERNETES_SERVER} --certificate-authority=${KUBERNETES_CA_CERT}
+                            kubectl config set-cluster minikube --server=${KUBERNETES_SERVER} --insecure-skip-tls-verify=true
                             kubectl config set-credentials minikube --token=${KUBERNETES_TOKEN}
                             kubectl config set-context minikube --cluster=minikube --user=minikube
                             kubectl config use-context minikube
