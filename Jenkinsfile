@@ -1,7 +1,6 @@
 pipeline {
     environment {
         dockerimagename = "drilonnol/react-app"  // Specify the image name you want to use
-        registryCredential = 'dockerhub-credentials'  // Docker Hub credentials stored in Jenkins
         tag = "latest"  // Tag for Docker image
         KUBERNETES_SERVER = 'https://127.0.0.1:61828'  // Kubernetes server URL
     }
@@ -13,18 +12,6 @@ pipeline {
             steps {
                 script {
                     git branch: 'main', url: 'https://github.com/Drilonnol/jankins-kubernetis-deployment.git'
-                }
-            }
-        }
-
-        stage('Push Docker Image to Docker Hub') {
-            steps {
-                script {
-                    // Push existing Docker image to Docker Hub (no build here)
-                    bat '''
-                        docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%
-                        docker image push %dockerimagename%:%tag%
-                    '''
                 }
             }
         }
