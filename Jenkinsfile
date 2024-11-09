@@ -11,8 +11,10 @@ pipeline {
     stages {
         stage('Checkout Source') {
             steps {
-                // Cloning the Git repository
+                script {
                 git branch: 'main', url: 'https://github.com/Drilonnol/jankins-kubernetis-deployment.git' 
+                   
+                }
             }
         }
 
@@ -20,9 +22,10 @@ pipeline {
             steps {
                 script {
                     // Push existing Docker image to Docker Hub (no build here)
-                    docker.withRegistry('https://registry.hub.docker.com', registryCredential) {
-                        docker.image(dockerimagename).push(tag)
-                    }
+                    sh '''
+                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                        docker image push $dockerimagename:$tag
+                    '''
                 }
             }
         }
@@ -30,14 +33,15 @@ pipeline {
         stage('Configure Kubernetes') {
             steps {
                 script {
-                    // Kubernetes configuration (use of secrets to authenticate)
+                    // Set up Kubernetes configuration using secrets (stored in Jenkins as credentials)
                     withCredentials([string(credentialsId: 'secrets', variable: 'KUBERNETES_TOKEN')]) {
-                        sh """
-                            kubectl config set-cluster minikube --server=${KUBERNETES_SERVER} --insecure-skip-tls-verify=true
-                            kubectl config set-credentials minikube --token=${KUBERNETES_TOKEN}
+                        // Use environment variable for Kubernetes token securely
+                        sh '''
+                            kubectl config set-cluster minikube --server=$KUBERNETES_SERVER --insecure-skip-tls-verify=true
+                            kubectl config set-credentials minikube --token=$KUBERNETES_TOKEN
                             kubectl config set-context minikube --cluster=minikube --user=minikube
                             kubectl config use-context minikube
-                        """
+                        '''
                     }
                 }
             }
@@ -47,10 +51,10 @@ pipeline {
             steps {
                 script {
                     // Apply Kubernetes deployment and service YAML files
-                    sh """
+                    sh '''
                         kubectl apply -f deployment.yaml
                         kubectl apply -f service.yaml
-                    """
+                    '''
                 }
             }
         }
@@ -58,14 +62,14 @@ pipeline {
         stage('Check Deployment Status') {
             steps {
                 script {
-                    // Check the rollout status of the deployment
+                    // Wait for the deployment rollout to finish and show the status
                     sh 'kubectl rollout status deployment/react-app-deployment --timeout=2m'
                     
-                    // Get pods and services to verify deployment
+                    // Show the status of pods and services
                     sh 'kubectl get pods'
                     sh 'kubectl get svc'
 
-                    // Retrieve URL for service
+                    // Retrieve and display the service URL
                     sh 'minikube service react-app-service --url'
                 }
             }
